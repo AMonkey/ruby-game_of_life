@@ -73,7 +73,8 @@ class Cell
             else
                 # Suffocates
                 @next_state = false
-                
+
+            end 
         else
             if num_live_neighbors == 3
                 # Reproduces
@@ -83,6 +84,8 @@ class Cell
                 # Stays ded
                 @next_state = false
 
+            end
+        end
     end
 
     # Boolean wrappers
