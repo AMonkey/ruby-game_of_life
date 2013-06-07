@@ -3,6 +3,8 @@
 class Board
     def initialize(s)
         @size = s
+
+        # Makes an array of arrays, each corresponding to a row, filled with dead cells
         @board = Array.new(size, Array.new(size, Cell.new))
 
     end
@@ -15,6 +17,7 @@ class Board
     def print
         s = ''
         @board.each do |r|
+            # Top off each row
             s += "-" * (@size * 2 + 1)
             s += "\n"
             r.each do |c|
@@ -28,10 +31,14 @@ class Board
                 end
             end
         end
+        # Cap it and print
+        s += "-" * (@size * 2 + 1)
         puts s
 
     end
 
+    # Returns a flattened list of all neighbors of a given location
+    # Location must be a 2-member list of coordinates [row, coloumn]
     def get_neighborhood(*location)
         t = @board[location[0]-1].slice(location[1]-1, 3)
         m = @board[location[0]].slice(location[1]-1, 3)
@@ -50,6 +57,7 @@ class Cell
 
     end
 
+    # Populates the next_state var with the proper state
     def calculate_next_state(neighborhood)
         #Check states
         num_live_neighbors = neightborhood.count(true)
@@ -77,6 +85,7 @@ class Cell
 
     end
 
+    # Boolean wrappers
     def is_alive?
         return @current_state
 
