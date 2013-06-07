@@ -10,7 +10,7 @@ class Board
     end
 
     def populate_random(n = @size/2)
-        #n.times {}
+        n.times { @board[Random.rand(@size)][Random.rand(@size)].birth }
 
     end
 
@@ -96,6 +96,17 @@ class Cell
 
     def will_be_alive?
         return @next_state
+
+    end
+
+    # State affectors
+    def birth
+        @current_state = true
+
+    end
+
+    def kill
+        @current_state = false
 
     end
 end
