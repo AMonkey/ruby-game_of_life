@@ -111,6 +111,7 @@ module GameOfLife
             else
                 if num_live_neighbors == 3
                     # Reproduces
+                    puts "Cell #{self} is birthed" if $DEBUG
                     @next_state = true
 
                 else
