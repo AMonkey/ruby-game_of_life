@@ -5,12 +5,18 @@ module GameOfLife
             @size = s
 
             # Makes an array of arrays, each corresponding to a row, filled with dead cells
-            @board = Array.new(@size, Array.new(@size, Cell.new))
+            @board = Array.new(@size) { Array.new(@size) { Cell.new } }
 
         end
 
-        def populate_random(n = @size/2)
-            n.times { @board[Random.rand(@size)][Random.rand(@size)].birth! }
+        def get_cell(r, c)
+            return @board[r][c]
+
+        end
+
+        def populate_random!(n = @size/2)
+            puts n.to_s if $DEBUG
+            n.times { self.get_cell(Random.rand(@size), Random.rand(@size)).birth! }
 
         end
 
@@ -63,7 +69,7 @@ module GameOfLife
         def calculate_next_state(neighborhood)
             #Check states
             num_live_neighbors = neightborhood.count(true)
-            if this.is_alive?
+            if self.is_alive?
                 if num_live_neighbors < 2
                     # Starves
                     @next_state = false
