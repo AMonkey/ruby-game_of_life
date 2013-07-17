@@ -3,12 +3,13 @@ module GameOfLife
         attr_accessor :board
 
         BORDER = 10
-        RESOLUTION = 10 # Number of pixels / grid space
-        def initialize(s)
+        def initialize(s, resol, window)
             @size = s
+            @resolution = resol
 
             # Makes an array of arrays, each corresponding to a row, filled with dead cells
-            @board = Array.new(@size+BORDER) { Array.new(@size+BORDER) { Cell.new } }
+            @board = Array.new(@size+BORDER) { Array.new(@size+BORDER) { Cell.new(window) } }
+            @window = window
         end
 
         # Run one turn of the game
@@ -35,7 +36,7 @@ module GameOfLife
             return @board[r][c]
         end
 
-        def populate_random!(n = @size/2)
+        def populate_random!(n = (@size*@size)/2)
             puts n.to_s if $DEBUG
             n.times { self.get_cell(Random.rand(@size), Random.rand(@size)).birth! }
         end
@@ -78,9 +79,21 @@ module GameOfLife
             @size.times do |r|
                 @size.times do |c|
                     # Get cell, draw it, move it in to position
-                    c = self.get_cell(r,c)
-                    img = c.draw
-                    img.draw(r*RESOLUTION, c*RESOLUTION, 1)
+                    cell = self.get_cell(r,c)
+                    color = cell.draw
+                    #img.draw(r * @resolution, c * @resolution, 1)
+                    x_coords = [(c * @resolution),
+                                (c * @resolution) + @resolution,
+                                (c * @resolution) + @resolution,
+                                (c * @resolution)].map {|x| x - (@window.width / 2.0)}
+                    y_coords = [(r * @resolution),
+                                (r * @resolution),
+                                (r * @resolution) + @resolution,
+                                (r * @resolution) + @resolution].map {|y| (@window.height / 2.0) - y }
+                    @window.draw_quad(x_coords[0], y_coords[0], color,
+                                      x_coords[1], y_coords[1], color,
+                                      x_coords[2], y_coords[2], color,
+                                      x_coords[3], y_coords[3], color)
                 end
             end
         end
@@ -95,8 +108,8 @@ module GameOfLife
             @next_state = false
 
             # Gosu images
-            @image_alive = Gosu::Image.new(window, 'img/alive.bmp', false)
-            @image_dead = Gosu::Image.new(window, 'img/dead.bmp', false)
+            # @image_alive = Gosu::Image.new(window, 'img/alive.bmp', false)
+            # @image_dead = Gosu::Image.new(window, 'img/dead.bmp', false)
         end
 
         # Populates the next_state var with the proper state
@@ -153,12 +166,14 @@ module GameOfLife
             @current_state = false
         end
 
-        # Returns appropriate gosu image
+        # Returns color key for quad draw
         def draw
             if self.is_alive?
-                @image_alive
+                #@image_alive
+                return Gosu::Color::RED
             else
-                @image_dead
+                #@image_dead
+                return Gosu::Color::BLACK
             end
         end
     end
