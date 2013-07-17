@@ -1,13 +1,14 @@
-#!/usr/bin/ruby
 module GameOfLife
     class Board
+        attr_accessor :board
+
         BORDER = 10
+        RESOLUTION = 10 # Number of pixels / grid space
         def initialize(s)
             @size = s
 
             # Makes an array of arrays, each corresponding to a row, filled with dead cells
             @board = Array.new(@size+BORDER) { Array.new(@size+BORDER) { Cell.new } }
-
         end
 
         # Run one turn of the game
@@ -17,7 +18,6 @@ module GameOfLife
             @size.times do |r|
                 @size.times do |c|
                     self.get_cell(r,c).set_next_state!(self.get_neighborhood(r,c))
-
                 end
             end
 
@@ -26,22 +26,21 @@ module GameOfLife
             @size.times do |r|
                 @size.times do |c|
                     self.get_cell(r,c).step!
-
                 end
             end
+            # tl;dr this is fucking slow lol
         end
 
         def get_cell(r, c)
             return @board[r][c]
-
         end
 
         def populate_random!(n = @size/2)
             puts n.to_s if $DEBUG
             n.times { self.get_cell(Random.rand(@size), Random.rand(@size)).birth! }
-
         end
 
+        # Pre-gosu GUI, could be useful for debugging?
         def print
             s = ''
             @size.times do |r|
@@ -51,20 +50,16 @@ module GameOfLife
                 @size.times do |c|
                     if self.get_cell(r,c).is_alive?
                         s << 'x|'
-
                     else
                         s << ' |'
-
                     end
                 end
                 s << "\n"
-
             end
 
             # Cap it and print
             s << "-" * (@size * 2 + 1)
             puts s
-
         end
 
         # Returns a flattened list of all neighbors of a given location
@@ -76,15 +71,32 @@ module GameOfLife
             b = @board[location[0]+1].slice(location[1]-1, 3)
 
             return [t,m,b].flatten
+        end
 
+        # Wrapper for gosu image stuff in image, draws cells and resizes them
+        def draw
+            @size.times do |r|
+                @size.times do |c|
+                    # Get cell, draw it, move it in to position
+                    c = self.get_cell(r,c)
+                    img = c.draw
+                    img.draw(r*RESOLUTION, c*RESOLUTION, 1)
+                end
+            end
         end
     end
 
     class Cell
-        def initialize
+        # These aren't necessary, but what the hell.
+        attr_accessor :current_state, :next_state, :image_alive, :image_dead
+
+        def initialize(window)
             @current_state = false
             @next_state = false
 
+            # Gosu images
+            @image_alive = Gosu::Image.new(window, 'img/alive.bmp', false)
+            @image_dead = Gosu::Image.new(window, 'img/dead.bmp', false)
         end
 
         # Populates the next_state var with the proper state
@@ -96,24 +108,20 @@ module GameOfLife
                     # Starves
                     puts "Cell #{self} starves" if $DEBUG
                     @next_state = false
-
                 elsif num_live_neighbors >= 2 && num_live_neighbors <= 3
                     # Survives
                     puts "Cell #{self} lives" if $DEBUG
                     @next_state = true
-
                 else
                     # Suffocates
                     puts "Cell #{self} suffocates" if $DEBUG
                     @next_state = false
-
                 end 
             else
                 if num_live_neighbors == 3
                     # Reproduces
                     puts "Cell #{self} is birthed" if $DEBUG
                     @next_state = true
-
                 else
                     # Stays ded
                     @next_state = false
@@ -124,30 +132,34 @@ module GameOfLife
 
         def step!
             @current_state = @next_state
-
         end
 
         # Boolean wrappers
         def is_alive?
             return @current_state
-
         end
 
         # Undefined unless next state has been calculated
         def will_be_alive?
             return @next_state
-
         end
 
         # State affectors
         def birth!
             @current_state = true
-
         end
 
         def kill!
             @current_state = false
+        end
 
+        # Returns appropriate gosu image
+        def draw
+            if self.is_alive?
+                @image_alive
+            else
+                @image_dead
+            end
         end
     end
 end
