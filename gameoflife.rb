@@ -3,6 +3,7 @@ module GameOfLife
         attr_accessor :board
 
         BORDER = 10
+        GRID_BORDER = 1
         def initialize(s, resol, window)
             @size = s
             @resolution = resol
@@ -82,20 +83,31 @@ module GameOfLife
                     cell = self.get_cell(r,c)
                     color = cell.draw
                     #img.draw(r * @resolution, c * @resolution, 1)
-                    x_coords = [(c * @resolution),
-                                (c * @resolution) + @resolution,
-                                (c * @resolution) + @resolution,
-                                (c * @resolution)].map {|x| x - (@window.width / 2.0)}
-                    y_coords = [(r * @resolution),
-                                (r * @resolution),
-                                (r * @resolution) + @resolution,
-                                (r * @resolution) + @resolution].map {|y| (@window.height / 2.0) - y }
+                    x_coords = [(c * @resolution) + GRID_BORDER,
+                                (c * @resolution) + @resolution - GRID_BORDER,
+                                (c * @resolution) + @resolution - GRID_BORDER,
+                                (c * @resolution) + GRID_BORDER]
+                    y_coords = [(r * @resolution) + GRID_BORDER,
+                                (r * @resolution) + GRID_BORDER,
+                                (r * @resolution) + @resolution - GRID_BORDER,
+                                (r * @resolution) + @resolution - GRID_BORDER]
                     @window.draw_quad(x_coords[0], y_coords[0], color,
                                       x_coords[1], y_coords[1], color,
                                       x_coords[2], y_coords[2], color,
-                                      x_coords[3], y_coords[3], color)
+                                      x_coords[3], y_coords[3], color, 1)
                 end
             end
+        end
+
+        # Board layout affectors
+        def clear!
+            @board.map {|r| r.map { |c| c.kill! }}
+        end
+
+        def make_blinker!(center=[@size/2, @size/2])
+            self.get_cell(center[0], center[1]).birth!
+            self.get_cell(center[0], center[1]+1).birth!
+            self.get_cell(center[0], center[1]-1).birth!
         end
     end
 
